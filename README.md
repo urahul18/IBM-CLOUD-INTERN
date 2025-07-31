@@ -1,6 +1,6 @@
 # Recipe Preparation Agent
 
-An AI-powered web application that transforms your available ingredients into complete, detailed recipes using IBM Granite LLM.
+An AI-powered Node.js web application that transforms your available ingredients into complete, detailed recipes using IBM Granite LLM.
 
 ## Features
 
@@ -14,7 +14,7 @@ An AI-powered web application that transforms your available ingredients into co
 
 ## Technology Stack
 
-- **Backend**: Python Flask
+- **Backend**: Node.js with Express
 - **AI Model**: IBM Granite LLM via Watson Machine Learning
 - **Frontend**: HTML, CSS (Tailwind), JavaScript
 - **Styling**: Tailwind CSS with custom components
@@ -23,7 +23,7 @@ An AI-powered web application that transforms your available ingredients into co
 
 ### Prerequisites
 
-1. Python 3.8 or higher
+1. Node.js 16 or higher
 2. IBM Cloud account with Watson Machine Learning service
 3. IBM Watson Machine Learning API credentials
 
@@ -37,7 +37,7 @@ An AI-powered web application that transforms your available ingredients into co
 
 2. **Install dependencies**
    ```bash
-   pip install -r requirements.txt
+   npm install
    ```
 
 3. **Set up environment variables**
@@ -51,7 +51,7 @@ An AI-powered web application that transforms your available ingredients into co
 
 4. **Run the application**
    ```bash
-   python app.py
+   npm start
    ```
 
 5. **Access the application**
@@ -111,20 +111,15 @@ An AI-powered web application that transforms your available ingredients into co
 
 ```
 recipe-preparation-agent/
-├── app.py                 # Main Flask application
-├── config.py             # Configuration settings
-├── requirements.txt      # Python dependencies
+├── server.js             # Main Express server
+├── package.json          # Node.js dependencies
 ├── .env.example         # Environment variables template
-├── templates/
-│   └── index.html       # Main HTML template
-├── static/
+└── public/
+    ├── index.html       # Main HTML page
 │   ├── js/
 │   │   └── app.js       # Frontend JavaScript
 │   └── css/
 │       └── style.css    # Custom CSS styles
-└── utils/
-    ├── __init__.py
-    └── recipe_formatter.py # Recipe formatting utilities
 ```
 
 ## Features in Detail

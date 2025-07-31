@@ -1,0 +1,136 @@
+const express = require('express');
+const cors = require('cors');
+const axios = require('axios');
+const path = require('path');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static('public'));
+
+// IBM Watson ML configuration
+const IBM_WATSON_ML_API_KEY = process.env.IBM_WATSON_ML_API_KEY;
+const IBM_WATSON_ML_URL = process.env.IBM_WATSON_ML_URL || 'https://us-south.ml.cloud.ibm.com';
+const IBM_WATSON_ML_PROJECT_ID = process.env.IBM_WATSON_ML_PROJECT_ID;
+
+class RecipeAgent {
+    constructor() {
+        this.apiKey = IBM_WATSON_ML_API_KEY;
+        this.baseUrl = IBM_WATSON_ML_URL;
+        this.projectId = IBM_WATSON_ML_PROJECT_ID;
+    }
+
+    async getAccessToken() {
+        try {
+            const response = await axios.post('https://iam.cloud.ibm.com/identity/token', 
+                'grant_type=urn:iam:grant-type:apikey&apikey=' + this.apiKey,
+                {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+            return response.data.access_token;
+        } catch (error) {
+            console.error('Error getting access token:', error.response?.data || error.message);
+            throw new Error('Failed to authenticate with IBM Watson ML');
+        }
+    }
+
+    async generateRecipe(ingredients) {
+        try {
+            const accessToken = await this.getAccessToken();
+            
+            const prompt = `Create a detailed recipe using the following ingredients: ${ingredients}
+
+Please provide:
+1. Recipe Name
+2. Preparation Time
+3. Cooking Time
+4. Servings
+5. Complete ingredient list with measurements
+6. Step-by-step cooking instructions
+7. Cooking tips and tricks
+8. Possible ingredient substitutions
+9. Nutritional highlights
+
+Format the response in a clear, easy-to-follow structure.`;
+
+            const payload = {
+                input: prompt,
+                parameters: {
+                    decoding_method: "greedy",
+                    max_new_tokens: 1000,
+                    temperature: 0.7,
+                    top_p: 0.9,
+                    repetition_penalty: 1.1
+                },
+                model_id: "ibm/granite-13b-chat-v2",
+                project_id: this.projectId
+            };
+
+            const response = await axios.post(
+                `${this.baseUrl}/ml/v1/text/generation?version=2023-05-29`,
+                payload,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                }
+            );
+
+            return response.data.results[0].generated_text;
+        } catch (error) {
+            console.error('Error generating recipe:', error.response?.data || error.message);
+            throw new Error('Failed to generate recipe');
+        }
+    }
+}
+
+const recipeAgent = new RecipeAgent();
+
+// Routes
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.post('/generate-recipe', async (req, res) => {
+    try {
+        const { ingredients } = req.body;
+        
+        if (!ingredients || !ingredients.trim()) {
+            return res.status(400).json({ error: 'Please provide ingredients' });
+        }
+
+        const recipe = await recipeAgent.generateRecipe(ingredients);
+        
+        res.json({
+            success: true,
+            recipe: recipe,
+            ingredients_used: ingredients
+        });
+    } catch (error) {
+        console.error('Recipe generation error:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+});
+
+app.get('/health', (req, res) => {
+    res.json({ status: 'healthy', service: 'Recipe Preparation Agent' });
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`Recipe Preparation Agent running on port ${PORT}`);
+    console.log(`Open http://localhost:${PORT} to use the application`);
+});
