@@ -54,8 +54,11 @@ class RecipeApp {
 
             const data = await response.json();
 
-            if (data.success) {
+            if (data.success || data.fallback) {
                 this.showRecipe(data.recipe, data.ingredients_used);
+                if (data.fallback) {
+                    console.log('Using fallback recipe generation');
+                }
             } else {
                 this.showError(data.error || 'Failed to generate recipe');
             }
