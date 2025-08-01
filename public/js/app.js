@@ -7,6 +7,7 @@ class RecipeApp {
     initializeElements() {
         this.ingredientsInput = document.getElementById('ingredients');
         this.generateBtn = document.getElementById('generateBtn');
+        this.enterBtn = document.getElementById('enterBtn');
         this.clearBtn = document.getElementById('clearBtn');
         this.copyBtn = document.getElementById('copyBtn');
         this.loading = document.getElementById('loading');
@@ -19,6 +20,7 @@ class RecipeApp {
 
     bindEvents() {
         this.generateBtn.addEventListener('click', () => this.generateRecipe());
+        this.enterBtn.addEventListener('click', () => this.generateRecipe());
         this.clearBtn.addEventListener('click', () => this.clearAll());
         this.copyBtn.addEventListener('click', () => this.copyRecipe());
         
@@ -66,6 +68,7 @@ class RecipeApp {
         this.hideAllOutputs();
         this.loading.classList.remove('hidden');
         this.generateBtn.disabled = true;
+        this.enterBtn.disabled = true;
         this.generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Generating...';
     }
 
@@ -92,6 +95,7 @@ class RecipeApp {
 
     resetGenerateButton() {
         this.generateBtn.disabled = false;
+        this.enterBtn.disabled = false;
         this.generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i>Generate Recipe';
     }
 
